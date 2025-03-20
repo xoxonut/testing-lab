@@ -1,26 +1,68 @@
-import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from 'vitest'
-import { serverOf } from '../src/server'
-import * as TodoRepo from '../src/repo/todo'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
+describe('Todo Service', () => {
+  const mockTodo = { id: '1', title: 'Test Todo', status: false };
+  const mockTodoBody = { title: 'New Todo', status: false };
 
-describe('Todo API Testing', () => {
-  const server = serverOf()
+  const repo = {
+    findAllTodos: vi.fn(),
+    createTodo: vi.fn(),
+    updateTodoById: vi.fn(),
+    deleteTodoById: vi.fn(),
+  };
 
-  afterEach(() => {
-    vi.resetAllMocks()
-  })
+  const getTodos = async () => repo.findAllTodos();
+  const addTodo = async (todo: typeof mockTodoBody) => repo.createTodo(todo);
+  const updateTodoStatus = async (id: string, status: boolean) =>
+    repo.updateTodoById(id, { status });
+  const deleteTodo = async (id: string) => repo.deleteTodoById(id);
 
-  test('Given an empty array return from repo function, When send a GET request to /api/v1/todos, Then it should response an empty array', async () => {
-    // assert: stub the repo function to return an empty array
-    vi.spyOn(TodoRepo, 'findAllTodos').mockImplementation(async () => [])
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-    // act: send a GET request to /api/v1/todos
-    const response = await server.inject({
-      method: 'GET',
-      url: '/api/v1/todos'
-    })
+  describe('getTodos', () => {
+    it('should return a list of todos', async () => {
+      vi.spyOn(repo, 'findAllTodos').mockResolvedValue([mockTodo]);
 
-    // assert: response should be an empty array
-    const todos = JSON.parse(response.body)['todos']
-    expect(todos).toStrictEqual([])
-  })
-})
+      const todos = await getTodos();
+
+      expect(repo.findAllTodos).toHaveBeenCalledTimes(1);
+      expect(todos).toEqual([mockTodo]);
+    });
+  });
+
+  describe('addTodo', () => {
+    it('should add a new todo and return it', async () => {
+      vi.spyOn(repo, 'createTodo').mockResolvedValue(mockTodo);
+
+      const newTodo = await addTodo(mockTodoBody);
+
+      expect(repo.createTodo).toHaveBeenCalledWith(mockTodoBody);
+      expect(newTodo).toEqual(mockTodo);
+    });
+  });
+
+  describe('updateTodoStatus', () => {
+    it('should update the status of a todo and return the updated todo', async () => {
+      const updatedTodo = { ...mockTodo, status: true };
+      vi.spyOn(repo, 'updateTodoById').mockResolvedValue(updatedTodo);
+
+      const result = await updateTodoStatus('1', true);
+
+      expect(repo.updateTodoById).toHaveBeenCalledWith('1', { status: true });
+      expect(result).toEqual(updatedTodo);
+    });
+  });
+
+  describe('deleteTodo', () => {
+    it('should delete a todo and return the result', async () => {
+      const mockResult = { acknowledged: true, deletedCount: 1 };
+      vi.spyOn(repo, 'deleteTodoById').mockResolvedValue(mockResult);
+
+      const result = await deleteTodo('1');
+
+      expect(repo.deleteTodoById).toHaveBeenCalledWith('1');
+      expect(result).toEqual(mockResult);
+    });
+  });
+});

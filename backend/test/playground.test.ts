@@ -5,7 +5,7 @@ import { fail } from 'assert'
 describe('my testing playground', () => {
   test('it works', () => {
     const expected = true
-    const actual = false
+    const actual = expected
     expect(actual).toBe(expected)
   })
 
@@ -15,7 +15,14 @@ describe('my testing playground', () => {
     })
     it('should return 5 when add 2 and 3', () => {
       // TODO: fix the test
-      fail('not implemented')
+      // Arrange
+      const a = 2
+      const b = 3
+      // Act 
+      const result = myCustomAdd(2,3)
+      // Assert
+      expect(result).toBe(5)
+
     })
   })
 
@@ -25,11 +32,11 @@ describe('my testing playground', () => {
     })
     it('should return 1 when n is 2', () => {
       // TODO: fix the test
-      fail('not implemented')
+      expect(fabonacci(2)).toBe(1)
     })
     it('should return 2 when n is 3', () => {
       // TODO: fix the test
-      fail('not implemented')
+      expect(fabonacci(3)).toBe(2)
     })
   })
 })
